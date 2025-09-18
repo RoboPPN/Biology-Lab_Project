@@ -1,0 +1,8 @@
+include LICENSE
+include *.sh
+include *.MD
+include gripper_sdk/*.MD
+include gripper_sdk/*.sh
+include gripper_sdk/LICENSE
+
+recursive-include gripper_sdk/asserts *

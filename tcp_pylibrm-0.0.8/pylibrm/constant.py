@@ -1,0 +1,111 @@
+'''
+Best practice 01
+
+Put all constants in one file, and protect them from changing value.
+
+'''
+# File name: constants.py
+
+class Const(object):
+    class ConstError(TypeError):
+        pass
+
+    class ConstCaseError(ConstError):
+        pass
+
+    def __setattr__(self, name, value):
+        if name in self.__dict__: # 判断是否已经被赋值，如果是则报错
+            raise self.ConstError("Can't change const.%s" % name)
+        if not name.isupper(): # 判断所赋值是否是全部大写，用来做第一次赋值的格式判断，也可以根据需要改成其他判断条件
+            raise self.ConstCaseError('const name "%s" is not all supercase' % name)
+
+        self.__dict__[name] = value
+
+const = Const()
+ 
+const.COMMAND_NONE = 0
+const.COMMAND_GO_HOME = 1
+const.COMMAND_DELAY = 2
+const.COMMAND_MOVE_ABSOLUTE = 3
+const.COMMAND_PUSH = 4
+const.COMMAND_MOVE_RELATIVE= 5
+const.COMMAND_PRECISE_PUSH = 6
+const.COMMAND_RESET_FORCE = 7
+const.COMMAND_STOP = 8
+const.COMMAND_START_MONITOR = 9
+const.COMMAND_GO_HOME_Z = 10
+const.COMMAND_PRECISE_TOUCH = 11
+
+
+const.STATE_OBSERVER_POSITION = 0
+const.STATE_OBSERVER_VELOCITY = 2
+const.STATE_OBSERVER_TORQUE = 4
+
+const.CMD_MANAGER_CURRENT_COMMAND_INDEX = 14
+const.FORCE_SENSOR_READING = 16
+const.CMD_MANAGER_CURRENT_COMMAND_STATUS = 18
+const.CMD_MANAGER_SAMPLE_SIZE = 0x5FFF
+const.EDS_SIZE = 0xFFFF
+
+const.VIRTUAL_IO_GO_HOME = 17
+const.VIRTUAL_IO_RESET_ERROR = 0
+const.VIRTUAL_IO_SERVO_ON_OFF = 1
+const.VIRTUAL_IO_COMMAND_START = 2
+const.VIRTUAL_IO_COMMAND_STOP = 3
+const.VIRTUAL_IO_SAVE_PARAMETERS = 9
+const.VIRTUAL_IO_LOAD_PARAMETERS = 10
+const.VIRTUAL_IO_SAVE_COMMANDS = 11
+const.VIRTUAL_IO_LOAD_COMMAN = 12
+const.VIRTUAL_IO_RESET_FORC = 16
+const.ERR_MANAGER_ENABLE_VELOCITY_DEVIATION_OVERFL = 2018
+const.ERR_MANAGER_ENABLE_STUCK = 2019
+const.ERR_MANAGER_ENABLE_POSITION_DEVIATION_OVERFLOW = 2020
+
+const.CMD_MANAGER_PENDING_COMMAND_INDEX = 2000
+const.VIRTUAL_IO_RESTART = 2194
+const.PLANNER_LIMIT_POS = 2118
+const.PLANNER_LIMIT_NEG = 2120
+const.DIRECT_MOTION_POSITION = 2284
+const.DIRECT_MOTION_VELOCITY = 2286
+const.DIRECT_MOTION_ACCELERATION = 2288
+const.F9 = 4218
+
+const.VIRTUAL_IO_POSITION_DEVIATION_OVERFLO = 1
+const.VIRTUAL_IO_VELOCITY_DEVIATION_OVERFLO = 2
+const.VIRTUAL_IO_MOTOR_STUCK = 3
+const.VIRTUAL_IO_FORCE_OVERLOAD = 9
+const.VIRTUAL_IO_COMMAND_FINISHED_15 = 1015
+const.VIRTUAL_IO_COMMAND_FINISHED_14 = 1014
+const.VIRTUAL_IO_COMMAND_FINISHED_13 = 1013
+const.VIRTUAL_IO_COMMAND_FINISHED_12 = 1012
+const.VIRTUAL_IO_COMMAND_FINISHED_11 = 1011
+const.VIRTUAL_IO_COMMAND_FINISHED_10 = 1010
+const.VIRTUAL_IO_COMMAND_FINISHED_9 = 1009
+const.VIRTUAL_IO_COMMAND_FINISHED_8 = 1008
+const.VIRTUAL_IO_COMMAND_FINISHED_7 = 1007
+const.VIRTUAL_IO_COMMAND_FINISHED_6 = 1006
+const.VIRTUAL_IO_COMMAND_FINISHED_5 = 1005
+const.VIRTUAL_IO_COMMAND_FINISHED_4 = 1004
+const.VIRTUAL_IO_COMMAND_FINISHED_3 = 1003
+const.VIRTUAL_IO_COMMAND_FINISHED_2 = 1002
+const.VIRTUAL_IO_COMMAND_FINISHED_1 = 1001
+const.VIRTUAL_IO_COMMAND_FINISHED_0 = 1000
+
+const.VIRTUAL_IO_GONE_HOME = 1037
+const.VIRTUAL_IO_IN_POSITION = 8
+const.VIRTUAL_IO_MONITOR_FULL = 7
+
+const.B0 = 4300
+const.B1 = 4301
+const.B3 = 4303
+
+const.F1 = 4202
+const.F2 = 4204 
+const.F3 = 4206
+const.F4 = 4208
+const.F5 = 4210 
+const.F6 = 4212
+
+const.D0 = 4100
+const.D1 = 4102
+const.D2 = 4104

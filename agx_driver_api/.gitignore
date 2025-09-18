@@ -1,0 +1,10 @@
+.VSCodeCounter
+.vscode
+*.log
+__pycache__
+*.7z
+*.zip
+*.tar
+gripper_sdk.egg-info
+dist
+build

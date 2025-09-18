@@ -1,0 +1,20 @@
+Metadata-Version: 2.1
+Name: pylibrm
+Version: 0.0.5
+Summary: Python lib for RobustMotion axis
+Home-page: UNKNOWN
+Author: Alan Huang
+Author-email: alanhuang@rmaxis.com
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE.txt
+
+# pylibrm
+
+Python lib for RobustMotion's axis.
+
