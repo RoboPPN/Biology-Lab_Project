@@ -36,7 +36,7 @@ else:
     quit()  # 退出程序
 
 # 发送舵机当前位置校准命令，将ID为1的舵机当前位置校准为1024
-scs_comm_result, scs_error = packetHandler.reOfsCal(2, 2048)
+scs_comm_result, scs_error = packetHandler.reOfsCal(1, 0)
 if scs_comm_result != COMM_SUCCESS:
     # 通信失败时打印错误信息
     print("%s" % packetHandler.getTxRxResult(scs_comm_result))

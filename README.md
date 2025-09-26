@@ -2,107 +2,69 @@
 
 以下所有设备均在 ubuntu20.04 系统上经过测试。
 
-## 一体式伺服旋转夹爪
+## 移液枪装置
 
 ### 硬件接线
 
-![img error](img/img1.png)
+![img error](img/img99.png)
 
-调试板部分：
+该设备需要 24v 直流电源进行输入做整体供电，该设备包括 2 个舵机和 1 个关节电机。舵机需使用 microUSB 口进行驱动，关节电机需使用 CAN 模块进行驱动。
 
-![img error](img/img2.png)
+### 舵机驱动
 
-### 软件驱动
+代码文件位置：`Biology-Lab_Project/FTServo_Python/hls`
 
-安装驱动模块：
-
-```bash
-cd tcp_pylibrm-0.0.8
-
-pip install -e .
-```
-
-开始下载 py 库可能会遇到一些模块没有安装，需要根据反馈信息安装缺少的模块。
-
-设备连接：
+插入设备号后需要给设备端口加权限：
 
 ```bash
-from RMAxis import Axis_V6
-# 设备id为1代表连接的是夹持机构
-axis_rtu =Axis_V6.create_modbus_rtu('/dev/ttyUSB0', 115200, 1)
-# 设备id为1代表连接的是旋转机构
-axis_rtu2 =Axis_V6.create_modbus_rtu('/dev/ttyUSB0', 115200, 2)
+sudo chmod 777 /dev/ttyUSB0
 ```
-
-接下来就可以使用 axis_rtu、axis_rtu2 来调用各种控制接口。
-
-完整的接口示例，请查看 `tcp_pylibrm-0.0.8/pylibrm`下的 `example.py`文件。
-
-快速上手demo：`tcp_pylibrm-0.0.8/demo.py`
-
-下面列举一些常用接口。
-
-```bash
-#精密推压 (距离10mm，受力50%，速度系数 0，冲击系数 0 ，力定位范围0.1N，稳压时间 100ms)
-axis_rtu.precise_push(10,0.5, 0, 0, 0.1, 100)
-
-##绝对运动 (位置10mm，速度50mm/s，加速度 500mm/s2，减速度 500mm/s2 ，力定位范围0.1N)
-axis_rtu.move_absolute(10,50, 500, 500, 0.1)
-
-#推压运动 (距离10mm，速度 20mm/s，加速度 500mm/s2，出力15%，位置范围0.1mm，时间范围500ms)
-axis_rtu.push(10, 20, 500, 0.15, 0.1, 500)
-
-#精密推压（距离10mm,受力10N,速度系数1，冲击系数0，力定位范围0.1N，稳压时,500ms）
-axis_rtu.precise_push(10,10,1,0,0.1,500)
-
-#Z回原点(距离10mm,速度20mm/s,加速度100mm/s2,出力15%,定位范围0.1mm)
-axis_rtu.go_home_z(10,20,100,0.15,0.1)
-
-#精密触碰(距离10mm,速度20mm/s,加速度100mm/s2,力阈值 0.1N,定位范围0.1mm)
-axis_rtu.precise_touch(10,20,100,0.1,0.1)
-
-##重置错误
-axis_rtu.reset_error()
-
-##重置力
-axis_rtu.reset_force()
-
-##停止
-axis_rtu.stop()
-
-##获取当前位置
-axis_rtu.position()
-
-##获取当前速度
-axis_rtu.velocity()
-
-##获取当前位力矩
-axis_rtu.torque()
-```
-
-注意：上述几种控制方式除了绝对运动以外，其他几种都是相对运动。
-
-
-
-该电机参数表如下：
-
-![img error](img/img5.png)
-
-更多细节以及操作案例，例如《如何编辑指令实现快速柔性工作》、《旋转机构快速柔性扭紧》，请查看[产品使用手册](https://rmaixis.oss-cn-shanghai.aliyuncs.com/product%20support/manual/20250818/RM-RGM%20%E4%BA%A7%E5%93%81%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C.pdf)。
-
-
-
-## Feetech HLS 舵机
-
-### 硬件接线
-
-![img error](img/img3.png)
 
 双舵机设备ID号
 
 ![img error](img/img4.png)
 
 图中左边的舵机ID为1，右边舵机ID为2。（ps：如果设备上就只有一个舵机的默认ID号为1）
+
+上图中2个舵机的位置为 2048。
+
+代码位置：Biology-Lab_Project/FTServo_Python/hls/write.py
+
+```python
+# 舵机(ID1)
+scs_comm_result, scs_error = packetHandler.WritePosEx(1, 2048, 80, 80, 800)  # 发送位置命令，参数含义依次为ID, 目标位置, 速度, 加速度, 力矩
+if scs_comm_result != COMM_SUCCESS:
+    print("%s" % packetHandler.getTxRxResult(scs_comm_result))  # 通信失败错误信息
+elif scs_error != 0:
+    print("%s" % packetHandler.getRxPacketError(scs_error))  # 协议错误信息
+
+# 舵机(ID2)
+scs_comm_result, scs_error = packetHandler.WritePosEx(2, 2048, 80, 80, 800)  # 发送位置命令，参数含义依次为ID, 目标位置, 速度, 加速度, 力矩
+if scs_comm_result != COMM_SUCCESS:
+    print("%s" % packetHandler.getTxRxResult(scs_comm_result))
+elif scs_error != 0:
+    print("%s" % packetHandler.getRxPacketError(scs_error))
+```
+
+如需它们进行工作，需要将ID1位置设备为3000，ID2设置为800：
+
+```python
+# 舵机(ID1)
+scs_comm_result, scs_error = packetHandler.WritePosEx(1, 3000, 80, 80, 800)  # 发送位置命令，参数含义依次为ID, 目标位置, 速度, 加速度, 力矩
+if scs_comm_result != COMM_SUCCESS:
+    print("%s" % packetHandler.getTxRxResult(scs_comm_result))  # 通信失败错误信息
+elif scs_error != 0:
+    print("%s" % packetHandler.getRxPacketError(scs_error))  # 协议错误信息
+
+# 舵机(ID2)
+scs_comm_result, scs_error = packetHandler.WritePosEx(2, 800, 80, 80, 800)  # 发送位置命令，参数含义依次为ID, 目标位置, 速度, 加速度, 力矩
+if scs_comm_result != COMM_SUCCESS:
+    print("%s" % packetHandler.getTxRxResult(scs_comm_result))
+elif scs_error != 0:
+    print("%s" % packetHandler.getRxPacketError(scs_error))
+```
+
+具体位置值、力矩需根据工作场景自行调整。
 
 
 
@@ -196,7 +158,7 @@ ofscal.py 内容如下：
 ```python
 #!/usr/bin/env python
 #
-# *********     Gen Write Example      *********
+# *********     Ping Example      *********
 #
 #
 # Available SCServo model on this example : All models using Protocol SCS
@@ -205,21 +167,18 @@ ofscal.py 内容如下：
 
 import sys
 import os
-import time
 
 sys.path.append("..")  # 将上级目录加入模块搜索路径，方便导入自定义库
-from scservo_sdk import *                      # 导入FTServo SDK库中的所有内容
+from scservo_sdk import *  # 导入FTServo SDK库中的所有内容
 
 
 # 初始化串口端口处理实例
-# 设置串口路径
-# 获取PortHandlerLinux或PortHandlerWindows的方法和成员
-portHandler = PortHandler('/dev/ttyUSB0')  # Linux下的串口设备路径示例
+# 设置串口路径，Linux示例为/dev/ttyUSB0
+portHandler = PortHandler('/dev/ttyUSB0')
 
-# 初始化协议处理实例
-# 获取协议相关的方法和成员
-packetHandler = hls(portHandler)  # 使用hls协议类，绑定端口处理实例
-    
+# 初始化协议处理实例，绑定端口处理实例
+packetHandler = hls(portHandler)
+
 # 打开串口
 if portHandler.openPort():
     print("Succeeded to open the port")  # 打开成功提示
@@ -234,25 +193,17 @@ else:
     print("Failed to change the baudrate")  # 设置失败提示
     quit()  # 退出程序
 
-# 舵机(ID1)
-scs_comm_result, scs_error = packetHandler.WritePosEx(1, 1024, 80, 80, 1000)  # 发送位置命令，参数含义依次为ID, 目标位置, 速度, 加速度, 力矩
+# 发送舵机当前位置校准命令，将ID为1的舵机当前位置校准为1024
+scs_comm_result, scs_error = packetHandler.reOfsCal(1, 1024)
 if scs_comm_result != COMM_SUCCESS:
-    print("%s" % packetHandler.getTxRxResult(scs_comm_result))  # 通信失败错误信息
-elif scs_error != 0:
-    print("%s" % packetHandler.getRxPacketError(scs_error))  # 协议错误信息
-
-# 等待时间，确保舵机运动完成
-time.sleep(1) 
-
-# 舵机(ID2)
-scs_comm_result, scs_error = packetHandler.WritePosEx(2, 0, 80, 80, 500)  # 发送位置命令
-if scs_comm_result != COMM_SUCCESS:
+    # 通信失败时打印错误信息
     print("%s" % packetHandler.getTxRxResult(scs_comm_result))
-elif scs_error != 0:
+else:
+    # 校准成功时打印提示信息
+    print("[ID:%03d] ofs cal Succeeded." % (1))
+if scs_error != 0:
+    # 协议错误时打印错误信息
     print("%s" % packetHandler.getRxPacketError(scs_error))
-
-# 等待时间，确保运动完成
-time.sleep(1)
 
 # 关闭串口
 portHandler.closePort()
@@ -260,87 +211,174 @@ portHandler.closePort()
 
 
 
+### 关节电机驱动
+
+代码文件位置：`Biology-Lab_Project/agx_driver_api`
+
+依赖安装：
+
+```bash
+cd agx_driver_api
+
+pip3 install -e .
+```
+
+can 模块使能：
+
+```bash
+cd agx_driver_api/gripper_sdk
+
+bash can_activate.sh can0 1000000
+```
+
+我们提供了demo示例，代码文件放置在`Biology-Lab_Project/agx_driver_api/gripper_sdk/demo`中：
+
+- gripper_ctrl_demo.py ：驱动电机夹爪开合(移动范围0~1.5rad)。
+- get_motor_info.py ： 获取电机信息，包括了电机当前位置、速度、温度。
+- set_current_limit.py ：设置电机电流限制，默认为 800 mh，如当前夹持力不满足可以调高限制电流值，不超过5000mh。
+- set_zero.py ：设置电机当前位置为零点。
+
+
+
+移液枪安装位置：
+
+![img error](img/img88.png)
 
 
 
 
-## piper 7号电机
+
+## 操作试管装置
 
 ### 硬件接线
 
-待定。。。
+![img error](img/img77.png)
 
-### ### 控制夹爪demo
+该设备需要 24v 直流电源进行输入做整体供电，该设备包括 1 个舵机、1 个一体式伺服旋转电机和 1 个关节电机。舵机需使用 microUSB 口进行驱动，关节电机需使用CAN模块进行驱动，一体式伺服旋转电机需使用 485转USB 进行驱动。
 
-```python
-from gripper_sdk import *  # 导入gripper_sdk中的所有功能
-import time  
+### 舵机驱动
 
-if __name__ == "__main__": 
-    controller = DriverApi()  # 创建驱动API的控制器实例
-    controller.ConnectPort()  # 连接到设备端口
-    controller.Enable()  # 使能设备
-    print("Enabling...")  # 打印使能提示
-    while controller.isOk():  # 循环检测设备状态是否正常
-        if controller.GetEnableStatus():  # 如果设备已经使能
-            print("Enable successfully")  # 打印使能成功提示
-            print("move to 1.5 rad pos")  # 打印移动到1.5弧度位置提示
-            controller.GripperCtrl(1.5)  # 控制设备移动到1.5弧度位置
-            time.sleep(1.1)  # 等待1.1秒，确保动作完成
-            print("move to 0 rad pos")  # 打印移动到0弧度位置提示
-            controller.GripperCtrl(0)  # 控制设备移动到0弧度位置
-            time.sleep(1.1)  # 等待1.1秒
-            print("Disabling...")  # 打印禁用提示
-            controller.Disable()  # 禁用设备
-            exit(0)  # 退出程序
-```
+代码文件位置：`Bio2logy-Lab_Project/FTServo_Python/hls`
 
-### 设置零位demo
+该设备使用的是一个舵机，所以默认ID为1
+
+驱动代码仍然使用`write.py`文件。
 
 ```python
-from gripper_sdk import *  # 导入gripper_sdk中的所有功能
-import time  
-
-if __name__ == "__main__":  
-    controller = DriverApi()  # 创建驱动API的控制器实例
-    controller.ConnectPort()  # 连接到设备端口
-    # 设置零点必须失能
-    controller.Disable()  # 禁用设备，确保安全设置零点
-    # 设定零点
-    a = controller.SetZero()  # 发送设置零点命令
-    while True:  # 循环等待零点设置响应
-        # 检测设置零点是否成功
-        if(controller.GetRespSetZero().msg.zero_val == 0xAC):  # 判断响应消息中的零点值是否为0xAC，表示成功
-            print(controller.GetRespSetZero())  # 打印响应消息
-            print("Set zero successfully!!")  # 打印成功提示
-            controller.ClearRespSetZero()  # 清除零点响应消息缓存
-            exit(0)  # 退出程序
-        time.sleep(0.01)  # 每次循环等待10毫秒，避免CPU占用过高
-    print("Is Not Ok, exit")  # 如果循环结束，打印失败提示
+# 舵机(ID1)
+scs_comm_result, scs_error = packetHandler.WritePosEx(1, 0, 80, 80, 800)  # 发送位置命令，参数含义依次为ID, 目标位置, 速度, 加速度, 力矩
+if scs_comm_result != COMM_SUCCESS:
+    print("%s" % packetHandler.getTxRxResult(scs_comm_result))  # 通信失败错误信息
+elif scs_error != 0:
+    print("%s" % packetHandler.getRxPacketError(scs_error))  # 协议错误信息
 ```
 
+需要注意的是该电机不工作时位置为0，工作时会将一体式伺服电机往下推压，位置值为800，具体的位置值和力矩需根据使用场景自行调整。
 
+### 一体式伺服电机驱动
 
-### 获取电机信息demo
+![img error](img/img1.png)
 
-```python
-from gripper_sdk import *  # 导入gripper_sdk中的所有功能
-import time  
+安装驱动模块：
 
-if __name__ == "__main__":  # 判断是否为主程序入口
-    controller = DriverApi()  # 创建驱动API的控制器实例
-    controller.ConnectPort()  # 连接到设备端口
-    while controller.isOk():  # 循环检测设备状态是否正常
-       
-        gripper_pos = controller.GetPos()  # 获取电机当前位置，单位：弧度(rad)
-        print("夹爪当前位置：", gripper_pos)  # 打印当前位置
-        
-        motor_vel = controller.GetVel()  # 获取电机当前速度,单位：rad/s
-        print("电机当前速度：", motor_vel)  # 打印电机速度
-        
-        motor_temp = controller.GetTemp()  # 获取电机温度,单位：摄氏度(℃)
-        print("电机温度：", motor_temp)  # 打印电机温度
-        
-        time.sleep(0.01)  # 每次循环等待10毫秒，避免CPU占用过高
+```bash
+cd Biology-Lab_Project/tcp_pylibrm-0.0.8
+
+pip install -e .
 ```
+
+开始下载 py 库可能会遇到一些模块没有安装，需要根据反馈信息安装缺少的模块。
+
+设备连接：
+
+```bash
+from RMAxis import Axis_V6
+# 设备id为1代表连接的是夹持机构
+axis_rtu =Axis_V6.create_modbus_rtu('/dev/ttyUSB0', 115200, 1)
+# 设备id为1代表连接的是旋转机构
+axis_rtu2 =Axis_V6.create_modbus_rtu('/dev/ttyUSB0', 115200, 2)
+```
+
+接下来就可以使用 axis_rtu、axis_rtu2 来调用各种控制接口。
+
+快速上手demo：`tcp_pylibrm-0.0.8/demo.py`
+
+完整的接口示例，请查看 `tcp_pylibrm-0.0.8/pylibrm`下的 `example.py`文件。
+
+下面列举一些常用接口。
+
+```bash
+#精密推压 (距离10mm，受力50%，速度系数 0，冲击系数 0 ，力定位范围0.1N，稳压时间 100ms)
+axis_rtu.precise_push(10,0.5, 0, 0, 0.1, 100)
+
+##绝对运动 (位置10mm，速度50mm/s，加速度 500mm/s2，减速度 500mm/s2 ，力定位范围0.1N)
+axis_rtu.move_absolute(10,50, 500, 500, 0.1)
+
+#推压运动 (距离10mm，速度 20mm/s，加速度 500mm/s2，出力15%，位置范围0.1mm，时间范围500ms)
+axis_rtu.push(10, 20, 500, 0.15, 0.1, 500)
+
+#精密推压（距离10mm,受力10N,速度系数1，冲击系数0，力定位范围0.1N，稳压时,500ms）
+axis_rtu.precise_push(10,10,1,0,0.1,500)
+
+#Z回原点(距离10mm,速度20mm/s,加速度100mm/s2,出力15%,定位范围0.1mm)
+axis_rtu.go_home_z(10,20,100,0.15,0.1)
+
+#精密触碰(距离10mm,速度20mm/s,加速度100mm/s2,力阈值 0.1N,定位范围0.1mm)
+axis_rtu.precise_touch(10,20,100,0.1,0.1)
+
+##重置错误
+axis_rtu.reset_error()
+
+##重置力
+axis_rtu.reset_force()
+
+##停止
+axis_rtu.stop()
+
+##获取当前位置
+axis_rtu.position()
+
+##获取当前速度
+axis_rtu.velocity()
+
+##获取当前位力矩
+axis_rtu.torque()
+```
+
+注意：上述几种控制方式除了绝对运动以外，其他几种都是相对运动。
+
+
+
+该电机参数表如下：
+
+![img error](img/img5.png)
+
+更多细节以及操作案例，例如《如何编辑指令实现快速柔性工作》、《旋转机构快速柔性扭紧》，请查看[产品使用手册](https://rmaixis.oss-cn-shanghai.aliyuncs.com/product%20support/manual/20250818/RM-RGM%20%E4%BA%A7%E5%93%81%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C.pdf)。
+
+### 关节电机驱动
+
+代码文件位置：`Biology-Lab_Project/agx_driver_api`
+
+依赖安装：
+
+```bash
+cd agx_driver_api
+
+pip3 install -e .
+```
+
+can 模块使能：
+
+```bash
+cd agx_driver_api/gripper_sdk
+
+bash can_activate.sh can0 1000000
+```
+
+我们提供了demo示例，代码文件放置在`Biology-Lab_Project/agx_driver_api/gripper_sdk/demo`中：
+
+- gripper_ctrl_demo.py ：驱动电机夹爪开合(移动范围0~1.5rad)。
+- get_motor_info.py ： 获取电机信息，包括了电机当前位置、速度、温度。
+- set_current_limit.py ：设置电机电流限制，默认为 800 mh，如当前夹持力不满足可以调高限制电流值，不超过5000mh。
+- set_zero.py ：设置电机当前位置为零点。
 
