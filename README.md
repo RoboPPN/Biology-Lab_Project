@@ -28,7 +28,7 @@ sudo chmod 777 /dev/ttyUSB0
 
 上图中2个舵机的位置为 2048。
 
-代码位置：Biology-Lab_Project/FTServo_Python/hls/write.py
+代码位置：Biology-Lab_Project/FTServo_Python/hls/write_two_motor.py
 
 ```python
 # 舵机(ID1)
@@ -262,7 +262,7 @@ bash can_activate.sh can0 1000000
 
 该设备使用的是一个舵机，所以默认ID为1
 
-驱动代码仍然使用`write.py`文件。
+驱动代码使用`write_one_motor.py`文件。
 
 ```python
 # 舵机(ID1)
